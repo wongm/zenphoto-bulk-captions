@@ -1,0 +1,17 @@
+.imageinputs input[type=text] {
+    width: 80%;
+}
+.imageinputs label {
+    width: 80px;
+    display: inline-block;
+}
+.imageinputs {
+    width: 100%;
+    vertical-align: top;
+}
+.imageinputs div {
+    padding-bottom: 10px;
+}
+.imagethumb {
+    text-align: center;
+}
