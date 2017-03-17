@@ -37,10 +37,6 @@ function initBulkCaptionData()
     setOption('photostream_images_per_page', 10, false);
     
     setCustomPhotostream($where, "", $orderBy);
-    
-    if (getNumPhotostreamImages() == 0) {
-        echo "<div class=\"messagebox\">No images to caption!</div>";
-    }
 }
 
 function saveBulkCaptions()
@@ -96,7 +92,9 @@ function saveBulkCaptions()
 
 function displayBulkCaptionProcessingResults()
 {
-    global $completedActionMessages;
+    if (getNumPhotostreamImages() == 0) {
+        echo "<div class=\"messagebox\">No images to caption!</div>";
+    }
     
     if (!isset($_POST["save"])) {
         return;
@@ -104,6 +102,7 @@ function displayBulkCaptionProcessingResults()
     
     echo "<div class=\"messagebox fade-message\">";
     
+    global $completedActionMessages;
     if (sizeof($completedActionMessages) == 0) {
         echo "No images updated!";
     }
