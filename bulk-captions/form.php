@@ -76,7 +76,7 @@ echo '</head>';
             				</tr>
             				<tr>
             				    <td colspan="2" class="bordered" id="imagenavb">
-            				        <?php adminPageNav(getBulkCaptionCurrentPage(), getTotalPhotostreamPages(), '/plugins/bulk-captions/', '?order=' . $_GET['order']); ?>
+            				        <?php adminPageNav(getBulkCaptionCurrentPage(), getTotalPhotostreamPages(), '/plugins/bulk-captions/', '?order=' . getBulkCaptionOrder()); ?>
             				    </td>
             				</tr>
             			</table>
