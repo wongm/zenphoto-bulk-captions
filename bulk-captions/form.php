@@ -28,6 +28,7 @@ echo '</head>';
 							echo "<input name=\"imageCount\" value=\"" . getNumPhotostreamImages() . "\" type=\"hidden\" />";            					
 							
 							global $_zp_current_image;
+							
 							$imageID = 0;
 							while (next_photostream_image()):
 								$imageID++;
@@ -48,8 +49,14 @@ echo '</head>';
                         		        <label for="description_<?php echo $imageID ?>">Description:</label>
                         		        <input name="description_<?php echo $imageID ?>" id="description_<?php echo $imageID ?>" type="text" value="<?php printImageDesc(); ?>" />
                         		    </div>
-                        		    <p>Date: <?php printImageDate(); ?></p>
-                        		    <p>Album:<?php echo $albumLinkText; ?></p>
+									
+									<?php if(array_key_exists("daily_score", $_zp_current_image->data)) { ?>
+                        		        <label for="daily_score_<?php echo $imageID ?>">Top photo?</label>
+                        		        <input name="daily_score_<?php echo $imageID ?>" id="daily_score_<?php echo $imageID ?>" type="checkbox" />
+									<?php } ?>
+									
+                        		    <p><label>Date:</label> <?php printImageDate(); ?></p>
+                        		    <p><label>Album:</label> <a href="<?php echo getAlbumURL(); ?>"><?php echo $albumLinkText; ?></a></p>
                         		    
                         		    <input name="filename_<?php echo $imageID ?>" type="hidden" value="<?php echo $_zp_current_image->getFileName() ?>" />
                         		    <input name="folder_<?php echo $imageID ?>" type="hidden" value="<?php echo getAlbumFolderForPhotostreamImage() ?>" />

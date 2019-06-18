@@ -31,7 +31,7 @@ function getBulkCaptionCurrentPage()
     return 1;
 }
 
-function initBulkCaptionData()
+function initBulkCaptionData($firstLoad=true)
 {
 	$where = "i.title = SUBSTRING_INDEX(i.filename,'.',1)";
     if (isBulkCaptionDateMode()) {
@@ -49,6 +49,16 @@ function initBulkCaptionData()
     setOption('photostream_images_per_page', 10, false);
     
     setCustomPhotostream($where, "", $orderBy);
+    
+    // search for images if nothing found and reload if required
+    if (getNumPhotostreamImages() == 0 && $firstLoad == true) {
+        global $_zp_gallery;
+        $_zp_gallery->getAlbums();
+        initBulkCaptionData(false);
+    } else if (getNumPhotostreamImages() > 0 && !isset($_GET["subpage"]) && (!isset($_GET["mode"]) || $_GET["mode"] != 'summary')) {
+        header('Location: /plugins/daily-summary/?mode=bulk');
+        die();
+    }
 }
 
 function saveBulkCaptions()
@@ -84,7 +94,7 @@ function saveBulkCaptionForImage($imageID)
     $description = $_POST["description_" . $imageID];
     $originalDescription = $_POST["originalDescription_" . $imageID];
     
-    $titleEdited = $descriptionEdited = false;
+    $titleEdited = $descriptionEdited = $dailyScoreEdited = false;
     
     if ($title != $originalTitle)
     {
@@ -105,14 +115,29 @@ function saveBulkCaptionForImage($imageID)
         query_full_array ($updateSql);
 	    $descriptionEdited = true;
     }
+	
+	if (isset($_POST["daily_score_" . $imageID])) {
+		$dailyScore = $_POST["daily_score_" . $imageID];
+		$updateSql = "UPDATE " . prefix('images') . " i " . 
+            " INNER JOIN " . prefix('albums') . " a ON i.albumid = a.id " . 
+            " SET i.daily_score = 1 " .
+	        " WHERE i.filename = '" . $filename . "' AND a.folder = '" . $folder . "'";
+	    query_full_array ($updateSql);
+	    $dailyScoreEdited = true;
+	}
+	
+	$dailyScoreEditedMessage = "";
+	if ($dailyScoreEdited) {
+		$dailyScoreEditedMessage = ". Image flagged for daily summary.";
+	}
     
     $completedActionMessages = "";
     if ($titleEdited && $descriptionEdited) {
-        $completedActionMessages = "Saved title and description: $filename";
+        $completedActionMessages = "Saved title and description: $filename$dailyScoreEditedMessage";
     } else if ($descriptionEdited) {
-        $completedActionMessages = "Saved description: $filename";
+        $completedActionMessages = "Saved description: $filename$dailyScoreEditedMessage";
     } else if ($titleEdited) {
-        $completedActionMessages = "Saved title: $filename";
+        $completedActionMessages = "Saved title: $filename$dailyScoreEditedMessage";
     }
     
     return $completedActionMessages;
