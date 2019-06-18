@@ -79,6 +79,52 @@ function saveBulkCaptions()
             $completedActionMessages[] = $completedActionMessage;
         }
     }
+    
+    $completedActionMessage = postSaveAction();
+    if (strlen($completedActionMessage) > 0) {
+        $completedActionMessages[] = $completedActionMessage;
+    }
+}
+
+function postSaveAction()
+{
+    $hiddenCaptionedImageQuery = "SELECT count(1) AS `hiddenUncaptionedImageCount` 
+        FROM " . prefix('images') . " i 
+        WHERE i.`show` = 0 AND i.title = SUBSTRING_INDEX(i.filename,'.',1)";
+        
+    $hiddenUncaptionedImageQuery = "SELECT count(1) AS `hiddenCaptionedImageCount` 
+        FROM " . prefix('images') . " i 
+        WHERE i.`show` = 0 AND i.title != SUBSTRING_INDEX(i.filename,'.',1)";
+    
+    $hiddenUncaptionedImageCount = query_single_row($hiddenCaptionedImageQuery)['hiddenUncaptionedImageCount'];
+    $hiddenCaptionedImageCount = query_single_row($hiddenUncaptionedImageQuery)['hiddenCaptionedImageCount'];
+    
+    if ($hiddenUncaptionedImageCount == 0 && $hiddenCaptionedImageCount > 0)
+    {        
+        $updateUnpublishedCaptionedImagesQuery = "UPDATE " . prefix('images') . " i 
+            SET i.`show` = 1 
+            WHERE i.`show` = 0 
+            AND i.title != SUBSTRING_INDEX(i.filename,'.',1)";
+
+        query($updateUnpublishedCaptionedImagesQuery);
+
+	    require_once(SERVERPATH . '/' . ZENFOLDER . '/' . PLUGIN_FOLDER . '/static_html_cache.php');
+	    static_html_cache::clearHTMLCache();
+	    
+	    return "$hiddenCaptionedImageCount new images published, cache cleared";
+    }
+}
+
+function publishPhotos()
+{
+    publishPhotos();
+    clearCache();
+}
+
+function clearCache()
+{
+    require_once(SERVERPATH . '/' . ZENFOLDER . '/' . PLUGIN_FOLDER . '/static_html_cache.php');
+    static_html_cache::clearHTMLCache();
 }
 
 function saveBulkCaptionForImage($imageID)
