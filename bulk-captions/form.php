@@ -99,5 +99,7 @@ echo '</head>';
 	<?php printAdminFooter(); ?>
 </body>
 <?php
+echo '<script>$("#captionForm :input").change(function() { $("#captionForm").data("changed",true); });';
+echo 'window.onbeforeunload = function() { if ($("#captionForm").data("changed")) { return "You work will be lost."; } };</script>';
 echo "</html>";
 ?>
