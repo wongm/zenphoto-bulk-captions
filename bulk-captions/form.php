@@ -35,8 +35,8 @@ echo '</head>';
 								?>
                         	<tr>
                             	<td class="imagethumb">
-                            	    <a href="<?=getImageURL();?>" title="<?=getImageTitle();?>">
-                            		    <img src="<? echo getImageThumb() ?>" title="<?=getImageTitle();?>" alt="<?=getImageTitle();?>" />
+                            	    <a href="<?php echo getImageURL();?>" title="<?php echo getImageTitle();?>">
+                            		    <img src="<?php echo getImageThumb() ?>" title="<?php echo getImageTitle();?>" alt="<?php echo getImageTitle();?>" />
                             	    </a>
                             	</td>
                             	<td class="imageinputs">
