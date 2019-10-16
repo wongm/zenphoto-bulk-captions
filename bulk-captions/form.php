@@ -1,6 +1,6 @@
 <?php
 
-printAdminHeader('overview', gettext('Bulk tagger'));
+printAdminHeader('overview', gettext('Bulk captions'));
 ?>
 <link rel="stylesheet" type="text/css" media="screen" href="bulk-captions.css" />
 <?php
