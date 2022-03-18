@@ -55,7 +55,7 @@ function initBulkCaptionData($firstLoad=true)
         global $_zp_gallery;
         $_zp_gallery->getAlbums();
         initBulkCaptionData(false);
-    } else if (getNumPhotostreamImages() > 0 && !isset($_GET["subpage"]) && (!isset($_GET["mode"]) || $_GET["mode"] != 'summary')) {
+    } else if (getNumPhotostreamImages() > 0 && !isset($_GET["subpage"]) && (!isset($_GET["mode"]) || $_GET["mode"] != 'summary') && file_exists(dirname(__FILE__) . '/../daily-summary/index.php')) {
         header('Location: /plugins/daily-summary/?mode=bulk');
         die();
     }
