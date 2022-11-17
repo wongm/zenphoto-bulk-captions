@@ -25,7 +25,7 @@ echo '</head>';
 						if (getNumPhotostreamImages() > 0) {
 						    
 							echo "<table class=\"bordered\">";
-							echo "<input name=\"imageCount\" value=\"" . getNumPhotostreamImages() . "\" type=\"hidden\" />";            					
+							echo "<input name=\"imageCount\" value=\"" . getNumPhotostreamImages() . "\" type=\"hidden\" />";
 							
 							global $_zp_current_image;
 							
@@ -33,6 +33,8 @@ echo '</head>';
 							while (next_photostream_image()):
 								$imageID++;
 								$albumLinkText = getAlbumTitleForPhotostreamImage();
+								$dailyScore = array_key_exists("daily_score", $_zp_current_image->data);
+								$topImage = $dailyScore && $_zp_current_image->data["daily_score"];
 								?>
                         	<tr>
                             	<td class="imagethumb">
@@ -40,7 +42,7 @@ echo '</head>';
                             		    <img src="<?php echo getImageThumb() ?>" title="<?php echo getImageTitle();?>" alt="<?php echo getImageTitle();?>" />
                             	    </a>
                             	</td>
-                            	<td class="imageinputs">
+                            	<td class="imageinputs"<?php if ($topImage) { echo " style=\"border: 2px solid red\""; } ?>>
                         		    <div>
                         		        <label for="title_<?php echo $imageID ?>">Title:</label>
                         		        <input name="title_<?php echo $imageID ?>" id="title_<?php echo $imageID ?>" type="text" value="<?php printImageTitle(); ?>" />
@@ -50,9 +52,9 @@ echo '</head>';
                         		        <input name="description_<?php echo $imageID ?>" id="description_<?php echo $imageID ?>" type="text" value="<?php printImageDesc(); ?>" />
                         		    </div>
 									
-									<?php if(array_key_exists("daily_score", $_zp_current_image->data)) { ?>
-                        		        <label for="daily_score_<?php echo $imageID ?>">Top photo?</label>
-                        		        <input name="daily_score_<?php echo $imageID ?>" id="daily_score_<?php echo $imageID ?>" type="checkbox" />
+									<?php if($dailyScore) { ?>
+                        		        <label for="daily_score_<?php echo $imageID ?>">Today's photo?</label>
+                        		        <input name="daily_score_<?php echo $imageID ?>" id="daily_score_<?php echo $imageID ?>" type="checkbox" <?php if ($topImage) { echo "checked"; } ?>/>
 									<?php } ?>
 									
                         		    <p><label>Date:</label> <?php printImageDate(); ?></p>
