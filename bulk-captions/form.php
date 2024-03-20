@@ -35,6 +35,10 @@ echo '</head>';
 								$albumLinkText = getAlbumTitleForPhotostreamImage();
 								$dailyScore = array_key_exists("daily_score", $_zp_current_image->data);
 								$topImage = $dailyScore && $_zp_current_image->data["daily_score"];
+								$imageDesc = getImageDesc();
+								if (str_contains($imageDesc, 'This image is protected')) {
+									$imageDesc = '';
+								}
 								?>
                         	<tr>
                             	<td class="imagethumb">
@@ -49,7 +53,7 @@ echo '</head>';
                                     </div>
                         		    <div>
                         		        <label for="description_<?php echo $imageID ?>">Description:</label>
-                        		        <input name="description_<?php echo $imageID ?>" id="description_<?php echo $imageID ?>" type="text" value="<?php printImageDesc(); ?>" />
+                        		        <input name="description_<?php echo $imageID ?>" id="description_<?php echo $imageID ?>" type="text" value="<?php echo $imageDesc; ?>" />
                         		    </div>
 									
 									<?php if($dailyScore) { ?>
