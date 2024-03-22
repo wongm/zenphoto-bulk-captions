@@ -64,7 +64,7 @@ echo '</head>';
                         		    <p><label>Date:</label> <?php printImageDate(); ?></p>
                         		    <p><label>Album:</label> <a href="<?php echo getAlbumURL(); ?>"><?php echo $albumLinkText; ?></a></p>
                         		    
-                        		    <input name="filename_<?php echo $imageID ?>" type="hidden" value="<?php echo $_zp_current_image->getFileName() ?>" />
+                        		    <input name="filename_<?php echo $imageID ?>" type="hidden" value="<?php echo $_zp_current_image->getName() ?>" />
                         		    <input name="folder_<?php echo $imageID ?>" type="hidden" value="<?php echo getAlbumFolderForPhotostreamImage() ?>" />
                         		    <input name="originalTitle_<?php echo $imageID ?>" type="hidden" value="<?php printImageTitle(); ?>" />
                         		    <input name="originalDescription_<?php echo $imageID ?>" type="hidden" value="<?php printImageDesc(); ?>" />
