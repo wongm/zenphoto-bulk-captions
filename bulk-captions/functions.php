@@ -88,25 +88,28 @@ function saveBulkCaptions()
 
 function postSaveAction()
 {
+	global $_zp_db;
+	
     $hiddenCaptionedImageQuery = "SELECT count(1) AS `hiddenUncaptionedImageCount` 
-        FROM " . prefix('images') . " i 
+        FROM " . $_zp_db->prefix('images') . " i 
         WHERE i.`show` = 0 AND i.title = SUBSTRING_INDEX(i.filename,'.',1)";
         
     $hiddenUncaptionedImageQuery = "SELECT count(1) AS `hiddenCaptionedImageCount` 
-        FROM " . prefix('images') . " i 
+        FROM " . $_zp_db->prefix('images') . " i 
         WHERE i.`show` = 0 AND i.title != SUBSTRING_INDEX(i.filename,'.',1)";
     
-    $hiddenUncaptionedImageCount = query_single_row($hiddenCaptionedImageQuery)['hiddenUncaptionedImageCount'];
-    $hiddenCaptionedImageCount = query_single_row($hiddenUncaptionedImageQuery)['hiddenCaptionedImageCount'];
+    $hiddenUncaptionedImageCount = $_zp_db->querySingleRow($hiddenCaptionedImageQuery)['hiddenUncaptionedImageCount'];
     
+	$hiddenCaptionedImageCount = $_zp_db->querySingleRow($hiddenUncaptionedImageQuery)['hiddenCaptionedImageCount'];
+	
     if ($hiddenUncaptionedImageCount == 0 && $hiddenCaptionedImageCount > 0)
     {        
-        $updateUnpublishedCaptionedImagesQuery = "UPDATE " . prefix('images') . " i 
+        $updateUnpublishedCaptionedImagesQuery = "UPDATE " . $_zp_db->prefix('images') . " i 
             SET i.`show` = 1 
             WHERE i.`show` = 0 
             AND i.title != SUBSTRING_INDEX(i.filename,'.',1)";
 
-        query($updateUnpublishedCaptionedImagesQuery);
+        $_zp_db->query($updateUnpublishedCaptionedImagesQuery);
 
 	    require_once(SERVERPATH . '/' . ZENFOLDER . '/' . PLUGIN_FOLDER . '/static_html_cache.php');
 	    static_html_cache::clearHTMLCache();
@@ -129,6 +132,8 @@ function clearCache()
 
 function saveBulkCaptionForImage($imageID)
 {
+	global $_zp_db;
+	
     if (!isset($_POST["filename_" . $imageID])) {
         return;
     }
@@ -144,31 +149,31 @@ function saveBulkCaptionForImage($imageID)
     
     if ($title != $originalTitle)
     {
-        $updateSql = "UPDATE " . prefix('images') . " i " . 
-            " INNER JOIN " . prefix('albums') . " a ON i.albumid = a.id " . 
-            " SET i.`title` = " . db_quote($title)  . 
+        $updateSql = "UPDATE " . $_zp_db->prefix('images') . " i " . 
+            " INNER JOIN " . $_zp_db->prefix('albums') . " a ON i.albumid = a.id " . 
+            " SET i.`title` = " . $_zp_db->quote($title)  . 
 	        " WHERE i.filename = '" . $filename . "' AND a.folder = '" . $folder . "'";
-	    query_full_array ($updateSql);
+	    $_zp_db->queryFullArray($updateSql);
 	    $titleEdited = true;
     }
     
     if ($description != $originalDescription)
     {
-        $updateSql = "UPDATE " . prefix('images') . " i " . 
-            " INNER JOIN " . prefix('albums') . " a ON i.albumid = a.id " . 
-            " SET i.`desc` = " . db_quote($description)  . 
+        $updateSql = "UPDATE " . $_zp_db->prefix('images') . " i " . 
+            " INNER JOIN " . $_zp_db->prefix('albums') . " a ON i.albumid = a.id " . 
+            " SET i.`desc` = " . $_zp_db->quote($description)  . 
 	        " WHERE i.filename = '" . $filename . "' AND a.folder = '" . $folder . "'";
-        query_full_array ($updateSql);
+        $_zp_db->queryFullArray($updateSql);
 	    $descriptionEdited = true;
     }
 	
 	if (isset($_POST["daily_score_" . $imageID])) {
 		$dailyScore = $_POST["daily_score_" . $imageID];
-		$updateSql = "UPDATE " . prefix('images') . " i " . 
-            " INNER JOIN " . prefix('albums') . " a ON i.albumid = a.id " . 
+		$updateSql = "UPDATE " . $_zp_db->prefix('images') . " i " . 
+            " INNER JOIN " . $_zp_db->prefix('albums') . " a ON i.albumid = a.id " . 
             " SET i.daily_score = 1 " .
 	        " WHERE i.filename = '" . $filename . "' AND a.folder = '" . $folder . "'";
-	    query_full_array ($updateSql);
+	    $_zp_db->queryFullArray($updateSql);
 	    $dailyScoreEdited = true;
 	}
 	
