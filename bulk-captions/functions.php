@@ -33,7 +33,7 @@ function getBulkCaptionCurrentPage()
 
 function initBulkCaptionData($firstLoad=true)
 {
-	$where = "i.title = SUBSTRING_INDEX(i.filename,'.',1)";
+    $where = "i.title = SUBSTRING_INDEX(i.filename,'.',1)";
     if (isBulkCaptionDateMode()) {
         $orderBy = "i.date";
     } else {
@@ -59,6 +59,12 @@ function initBulkCaptionData($firstLoad=true)
         header('Location: /plugins/daily-summary/?mode=bulk');
         die();
     }
+    
+    if (isset($_GET["publish"]))
+    {
+        postSaveAction();
+        echo "Cache cleared!";
+    }
 }
 
 function saveBulkCaptions()
@@ -79,7 +85,7 @@ function saveBulkCaptions()
             $completedActionMessages[] = $completedActionMessage;
         }
     }
-    
+
     $completedActionMessage = postSaveAction();
     if (strlen($completedActionMessage) > 0) {
         $completedActionMessages[] = $completedActionMessage;
@@ -88,8 +94,8 @@ function saveBulkCaptions()
 
 function postSaveAction()
 {
-	global $_zp_db;
-	
+    global $_zp_db;
+    
     $hiddenCaptionedImageQuery = "SELECT count(1) AS `hiddenUncaptionedImageCount` 
         FROM " . $_zp_db->prefix('images') . " i 
         WHERE i.`show` = 0 AND i.title = SUBSTRING_INDEX(i.filename,'.',1)";
@@ -100,10 +106,24 @@ function postSaveAction()
     
     $hiddenUncaptionedImageCount = $_zp_db->querySingleRow($hiddenCaptionedImageQuery)['hiddenUncaptionedImageCount'];
     
-	$hiddenCaptionedImageCount = $_zp_db->querySingleRow($hiddenUncaptionedImageQuery)['hiddenCaptionedImageCount'];
-	
+    $hiddenCaptionedImageCount = $_zp_db->querySingleRow($hiddenUncaptionedImageQuery)['hiddenCaptionedImageCount'];
+    
     if ($hiddenUncaptionedImageCount == 0 && $hiddenCaptionedImageCount > 0)
-    {        
+    {
+        if (!isset($_GET["publish"]))
+        {
+            $unpublishedImageFolderQuery = "SELECT folder
+                FROM " . $_zp_db->prefix('images') . " i 
+                INNER JOIN " . $_zp_db->prefix('albums') . " a ON i.albumid = a.id
+                WHERE i.`show` = 0 AND i.title != SUBSTRING_INDEX(i.filename,'.',1)
+                GROUP BY folder";
+                
+            global $unpublishedImageFolders, $unpublishedImageCount;
+            $unpublishedImageFolders = array_values($_zp_db->queryFullArray($unpublishedImageFolderQuery));
+            $unpublishedImageCount = $hiddenCaptionedImageCount;
+            return;
+        }
+        
         $updateUnpublishedCaptionedImagesQuery = "UPDATE " . $_zp_db->prefix('images') . " i 
             SET i.`show` = 1 
             WHERE i.`show` = 0 
@@ -111,10 +131,10 @@ function postSaveAction()
 
         $_zp_db->query($updateUnpublishedCaptionedImagesQuery);
 
-	    require_once(SERVERPATH . '/' . ZENFOLDER . '/' . PLUGIN_FOLDER . '/static_html_cache.php');
-	    static_html_cache::clearHTMLCache();
-	    
-	    return "$hiddenCaptionedImageCount new images published, cache cleared";
+        require_once(SERVERPATH . '/' . ZENFOLDER . '/' . PLUGIN_FOLDER . '/static_html_cache.php');
+        static_html_cache::clearHTMLCache();
+        
+        return "$hiddenCaptionedImageCount new images published, cache cleared";
     }
 }
 
@@ -132,8 +152,8 @@ function clearCache()
 
 function saveBulkCaptionForImage($imageID)
 {
-	global $_zp_db;
-	
+    global $_zp_db;
+    
     if (!isset($_POST["filename_" . $imageID])) {
         return;
     }
@@ -144,44 +164,44 @@ function saveBulkCaptionForImage($imageID)
     $originalTitle = $_POST["originalTitle_" . $imageID];
     $description = $_POST["description_" . $imageID];
     $originalDescription = $_POST["originalDescription_" . $imageID];
-    
+
     $titleEdited = $descriptionEdited = $dailyScoreEdited = false;
-    
+
     if ($title != $originalTitle)
     {
         $updateSql = "UPDATE " . $_zp_db->prefix('images') . " i " . 
             " INNER JOIN " . $_zp_db->prefix('albums') . " a ON i.albumid = a.id " . 
             " SET i.`title` = " . $_zp_db->quote($title)  . 
-	        " WHERE i.filename = '" . $filename . "' AND a.folder = '" . $folder . "'";
-	    $_zp_db->queryFullArray($updateSql);
-	    $titleEdited = true;
+            " WHERE i.filename = '" . $filename . "' AND a.folder = '" . $folder . "'";
+        $_zp_db->queryFullArray($updateSql);
+        $titleEdited = true;
     }
-    
+
     if ($description != $originalDescription)
     {
         $updateSql = "UPDATE " . $_zp_db->prefix('images') . " i " . 
             " INNER JOIN " . $_zp_db->prefix('albums') . " a ON i.albumid = a.id " . 
             " SET i.`desc` = " . $_zp_db->quote($description)  . 
-	        " WHERE i.filename = '" . $filename . "' AND a.folder = '" . $folder . "'";
+            " WHERE i.filename = '" . $filename . "' AND a.folder = '" . $folder . "'";
         $_zp_db->queryFullArray($updateSql);
-	    $descriptionEdited = true;
+        $descriptionEdited = true;
     }
-	
-	if (isset($_POST["daily_score_" . $imageID])) {
-		$dailyScore = $_POST["daily_score_" . $imageID];
-		$updateSql = "UPDATE " . $_zp_db->prefix('images') . " i " . 
+
+    if (isset($_POST["daily_score_" . $imageID])) {
+        $dailyScore = $_POST["daily_score_" . $imageID];
+        $updateSql = "UPDATE " . $_zp_db->prefix('images') . " i " . 
             " INNER JOIN " . $_zp_db->prefix('albums') . " a ON i.albumid = a.id " . 
             " SET i.daily_score = 1 " .
-	        " WHERE i.filename = '" . $filename . "' AND a.folder = '" . $folder . "'";
-	    $_zp_db->queryFullArray($updateSql);
-	    $dailyScoreEdited = true;
-	}
-	
-	$dailyScoreEditedMessage = "";
-	if ($dailyScoreEdited) {
-		$dailyScoreEditedMessage = ". Image flagged for daily summary.";
-	}
-    
+            " WHERE i.filename = '" . $filename . "' AND a.folder = '" . $folder . "'";
+        $_zp_db->queryFullArray($updateSql);
+        $dailyScoreEdited = true;
+    }
+
+    $dailyScoreEditedMessage = "";
+    if ($dailyScoreEdited) {
+        $dailyScoreEditedMessage = ". Image flagged for daily summary.";
+    }
+
     $completedActionMessages = "";
     if ($titleEdited && $descriptionEdited) {
         $completedActionMessages = "Saved title and description: $filename$dailyScoreEditedMessage";
@@ -190,7 +210,7 @@ function saveBulkCaptionForImage($imageID)
     } else if ($titleEdited) {
         $completedActionMessages = "Saved title: $filename$dailyScoreEditedMessage";
     }
-    
+
     return $completedActionMessages;
 }
 
@@ -200,7 +220,7 @@ function displayBulkCaptionProcessingResults()
         echo "<div class=\"messagebox\">No images to caption!</div>";
     }
     
-    global $completedActionMessages;
+    global $completedActionMessages, $unpublishedImageFolders, $unpublishedImageCount;
     
     if (!isset($_POST["save"])) {
         return;
@@ -217,6 +237,18 @@ function displayBulkCaptionProcessingResults()
         echo "$message<br>";
     }
     echo "</div>";
+    
+    if ($unpublishedImageCount > 0) {
+        echo "<div class=\"messagebox\">$unpublishedImageCount <a href=\"" . $_SERVER['PHP_SELF'] . "?mode=summary&publish=true\">images to publish</a></div>";
+
+        echo "<p>Albums modified:</p><textarea style=\"width: 500px; height: 400px;\" onclick=\"this.focus();this.select();\">";
+        foreach ($unpublishedImageFolders as $key => $value)
+        {
+            echo $_SERVER['SERVER_NAME'] . "/" . $value['folder'] . "\n";
+        }
+        echo $_SERVER['SERVER_NAME'] . "/page\n";
+        echo "</textarea>";
+    }
 }
 
 ?>
